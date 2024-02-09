@@ -1,6 +1,8 @@
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 
+from .utils import get_client_balance
+
 # Create your views here.
 
 
@@ -25,5 +27,25 @@ def create_transaction(request, client_id):
 
         # Redirect to a success page or do any other necessary processing
 
-    return JsonResponse(data=transaction.to_json(), status=200)
+    result_obj = {
+        "valor": amount,
+        "tipo": type,
+        "descricao": description,
+    }
+    return JsonResponse(data=result_obj, status=200)
     return JsonResponse({"message": "Transaction created successfully"}, status=200)
+
+
+def get_bank_statement(request, client_id, limit_transactions=10):
+    last_transactions = Transaction.objects.filter(client=client_id).order_by("-created_at")[
+        :limit_transactions
+    ]
+    client_balance = get_client_balance(client_id)
+    most_recent_transactions = {
+        "saldo": client_balance,
+        "ultimas_transacoes": [t.to_summarized_json() for t in last_transactions],
+    }
+    return JsonResponse(
+        data=most_recent_transactions,
+    )
+    pass

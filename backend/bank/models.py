@@ -23,6 +23,14 @@ class Transaction(models.Model):
             "client": self.client.to_json(),
         }
 
+    def to_summarized_json(self):
+        return {
+            "valor": self.amount,
+            "tipo": self.type,
+            "descricao": self.description,
+            "realizada_em": self.created_at,
+        }
+
 
 class Client(models.Model):
     limit = models.IntegerField()
