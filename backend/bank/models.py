@@ -28,7 +28,7 @@ class Transaction(models.Model):
             "valor": self.amount,
             "tipo": self.type,
             "descricao": self.description,
-            "realizada_em": self.created_at,
+            "realizada_em": self.created_at.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
         }
 
 

@@ -1,7 +1,7 @@
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 
-from .utils import get_client_balance
+from .utils import get_client_balance_and_metadata
 
 # Create your views here.
 
@@ -24,13 +24,14 @@ def create_transaction(request, client_id):
         transaction = Transaction.objects.create(
             amount=amount, type=type, description=description, client=client
         )
+        # transaction.save()
+        client_metadata = get_client_balance_and_metadata(client_id)
 
         # Redirect to a success page or do any other necessary processing
 
     result_obj = {
-        "valor": amount,
-        "tipo": type,
-        "descricao": description,
+        "limite": client_metadata["limit"],
+        "saldo": client_metadata["current_balance"],
     }
     return JsonResponse(data=result_obj, status=200)
     return JsonResponse({"message": "Transaction created successfully"}, status=200)
@@ -40,12 +41,16 @@ def get_bank_statement(request, client_id, limit_transactions=10):
     last_transactions = Transaction.objects.filter(client=client_id).order_by("-created_at")[
         :limit_transactions
     ]
-    client_balance = get_client_balance(client_id)
-    most_recent_transactions = {
-        "saldo": client_balance,
+    client_metadata = get_client_balance_and_metadata(client_id)
+    data_to_return = {
+        "saldo": {
+            "total": client_metadata["current_balance"],
+            "data_extrato": client_metadata["balance_date"],
+            "limite": client_metadata["limit"],
+        },
         "ultimas_transacoes": [t.to_summarized_json() for t in last_transactions],
     }
     return JsonResponse(
-        data=most_recent_transactions,
+        data=data_to_return,
     )
     pass
