@@ -1,11 +1,28 @@
 from datetime import datetime
 from django.db.models import Sum, Case, When, F
+from django.shortcuts import get_object_or_404
 
 from .models import Client, Transaction
 
 
+def check_transaction_data(transaction_data):
+    if transaction_data["amount"] <= 0:
+        return False
+    if type(transaction_data["amount"]) != int:
+        return False
+    if transaction_data["type"] not in ["c", "d"]:
+        return False
+    if transaction_data["description"] == None:
+        return False
+    if transaction_data["description"] == "":
+        return False
+    if len(transaction_data["description"]) > 10:
+        return False
+    return True
+
+
 def get_client_balance_and_metadata(client_id):
-    client = Client.objects.get(id=client_id)
+    client = get_object_or_404(Client, id=client_id)
     total_deposit = Transaction.objects.filter(client_id=client_id, type="c").aggregate(
         total_deposit=Sum("amount")
     )

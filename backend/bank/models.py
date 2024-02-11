@@ -1,5 +1,5 @@
 from django.db import models
-from datetime import datetime
+from django.utils import timezone
 
 # Create your models here.
 class Transaction(models.Model):
@@ -10,7 +10,7 @@ class Transaction(models.Model):
     amount = models.IntegerField()
     type = models.CharField(max_length=1, choices=TransactionTypeChoices.choices)
     description = models.CharField(max_length=10)
-    created_at = models.DateTimeField(default=datetime.utcnow)
+    created_at = models.DateTimeField(default=timezone.now)
     client = models.ForeignKey("Client", on_delete=models.CASCADE)
 
     def to_json(self):
@@ -35,6 +35,7 @@ class Transaction(models.Model):
 class Client(models.Model):
     limit = models.IntegerField()
     initial_balance = models.IntegerField()
+    # current_balance = models.IntegerField() #TODO
 
     def to_json(self):
         return {

@@ -1,7 +1,10 @@
+import json
+
+from django.db import transaction
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 
-from .utils import get_client_balance_and_metadata
+from .utils import check_transaction_data, get_client_balance_and_metadata
 
 # Create your views here.
 
@@ -11,30 +14,41 @@ from .models import Client, Transaction
 
 
 def create_transaction(request, client_id):
-    # Retrieve the client based on the client_id
-    client = get_object_or_404(Client, id=client_id)
-
     if request.method == "POST":
         # Extract the transaction details from the request data
-        amount = request.POST.get("amount")
-        type = request.POST.get("type")
-        description = request.POST.get("description")
+        body_unicode = request.body.decode("utf-8")
+        body = json.loads(body_unicode)
+        amount = body.get("valor")
+        type = body.get("tipo")
+        description = body.get("descricao", "")
+        transaction_data = {"amount": amount, "type": type, "description": description}
+        success = check_transaction_data(transaction_data)
+        if not success:
+            return JsonResponse(data={}, status=422)
 
-        # Create a new transaction object
-        transaction = Transaction.objects.create(
-            amount=amount, type=type, description=description, client=client
-        )
-        # transaction.save()
+        # Only go to the DB if the received data passes basic validation
+        client = get_object_or_404(Client, id=client_id)
+        with transaction.atomic():
+            client_metadata = get_client_balance_and_metadata(client_id)
+            if type == "d":
+                current_balance = client_metadata["current_balance"]
+
+                if amount > current_balance + client.limit:
+                    return JsonResponse(data={}, status=422)
+
+            bank_transaction = Transaction(
+                amount=amount, type=type, description=description, client=client
+            )
+            bank_transaction.save()
+            client_metadata = get_client_balance_and_metadata(client_id)
+            client_metadata["current_balance"]
+            result_obj = {
+                "limite": client_metadata["limit"],
+                "saldo": client_metadata["current_balance"],
+            }
+            return JsonResponse(data=result_obj, status=200)
+
         client_metadata = get_client_balance_and_metadata(client_id)
-
-        # Redirect to a success page or do any other necessary processing
-
-    result_obj = {
-        "limite": client_metadata["limit"],
-        "saldo": client_metadata["current_balance"],
-    }
-    return JsonResponse(data=result_obj, status=200)
-    return JsonResponse({"message": "Transaction created successfully"}, status=200)
 
 
 def get_bank_statement(request, client_id, limit_transactions=10):
