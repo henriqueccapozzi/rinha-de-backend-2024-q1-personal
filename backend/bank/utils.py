@@ -23,11 +23,15 @@ def check_transaction_data(transaction_data):
 
 def get_client_balance_and_metadata(client_id):
     client = get_object_or_404(Client, id=client_id)
-    total_deposit = Transaction.objects.filter(client_id=client_id, type="c").aggregate(
-        total_deposit=Sum("amount")
+    total_deposit = (
+        Transaction.objects.filter(client_id=client_id, type="c")
+        .only("amount", "type")
+        .aggregate(total_deposit=Sum("amount"))
     )
-    total_withdrawal = Transaction.objects.filter(client_id=client_id, type="d").aggregate(
-        total_withdrawal=Sum("amount")
+    total_withdrawal = (
+        Transaction.objects.filter(client_id=client_id, type="d")
+        .only("amount", "type")
+        .aggregate(total_withdrawal=Sum("amount"))
     )
 
     total_deposit_amount = total_deposit["total_deposit"] or 0

@@ -1,28 +1,11 @@
 [
     {
-        "model": "auth.user",
-        "pk": 1,
-        "fields": {
-            "password": "pbkdf2_sha256$600000$FQIre8vhSA626Cd4wCEaX1$8FfVSY+SHtM+N1c+l1ybUfx1ep1p7IWeCU7mH05jtE4=",
-            "last_login": "2024-02-11T00:37:36.073Z",
-            "is_superuser": true,
-            "username": "app",
-            "first_name": "",
-            "last_name": "",
-            "email": "",
-            "is_staff": true,
-            "is_active": true,
-            "date_joined": "2024-02-11T00:37:29.696Z",
-            "groups": [],
-            "user_permissions": []
-        }
-    },
-    {
         "model": "bank.client",
         "pk": 1,
         "fields": {
             "limit": 100000,
-            "initial_balance": 0
+            "initial_balance": 0,
+            "current_balance": 0
         }
     },
     {
@@ -30,7 +13,8 @@
         "pk": 2,
         "fields": {
             "limit": 80000,
-            "initial_balance": 0
+            "initial_balance": 0,
+            "current_balance": 0
         }
     },
     {
@@ -38,7 +22,8 @@
         "pk": 3,
         "fields": {
             "limit": 1000000,
-            "initial_balance": 0
+            "initial_balance": 0,
+            "current_balance": 0
         }
     },
     {
@@ -46,7 +31,8 @@
         "pk": 4,
         "fields": {
             "limit": 10000000,
-            "initial_balance": 0
+            "initial_balance": 0,
+            "current_balance": 0
         }
     },
     {
@@ -54,7 +40,8 @@
         "pk": 5,
         "fields": {
             "limit": 500000,
-            "initial_balance": 0
+            "initial_balance": 0,
+            "current_balance": 0
         }
     }
 ]

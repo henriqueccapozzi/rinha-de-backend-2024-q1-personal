@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 
 from django.db import transaction
@@ -27,44 +28,64 @@ def create_transaction(request, client_id):
             return JsonResponse(data={}, status=422)
 
         # Only go to the DB if the received data passes basic validation
-        client = get_object_or_404(Client, id=client_id)
         with transaction.atomic():
-            client_metadata = get_client_balance_and_metadata(client_id)
+            client = get_object_or_404(Client, id=client_id)
+            current_balance = client.current_balance
             if type == "d":
-                current_balance = client_metadata["current_balance"]
-
                 if amount > current_balance + client.limit:
                     return JsonResponse(data={}, status=422)
 
-            bank_transaction = Transaction(
+            new_balance = current_balance
+            if type == "d":
+                new_balance = current_balance - amount
+            elif type == "c":
+                new_balance = current_balance + amount
+
+            bank_transaction = Transaction.objects.create(
                 amount=amount, type=type, description=description, client=client
             )
-            bank_transaction.save()
-            client_metadata = get_client_balance_and_metadata(client_id)
-            client_metadata["current_balance"]
+            client.current_balance = new_balance
+            client.save()
+            # bank_transaction.save()
             result_obj = {
-                "limite": client_metadata["limit"],
-                "saldo": client_metadata["current_balance"],
+                "limite": client.limit,
+                "saldo": new_balance,
             }
             return JsonResponse(data=result_obj, status=200)
 
-        client_metadata = get_client_balance_and_metadata(client_id)
-
 
 def get_bank_statement(request, client_id, limit_transactions=10):
-    last_transactions = Transaction.objects.filter(client=client_id).order_by("-created_at")[
-        :limit_transactions
-    ]
-    client_metadata = get_client_balance_and_metadata(client_id)
-    data_to_return = {
-        "saldo": {
-            "total": client_metadata["current_balance"],
-            "data_extrato": client_metadata["balance_date"],
-            "limite": client_metadata["limit"],
-        },
-        "ultimas_transacoes": [t.to_summarized_json() for t in last_transactions],
-    }
-    return JsonResponse(
-        data=data_to_return,
-    )
-    pass
+    with transaction.atomic():
+        last_transactions = (
+            Transaction.objects.filter(client=client_id)
+            .order_by("-created_at")
+            .only("amount", "type", "description", "created_at")[:limit_transactions]
+        )
+
+        client = get_object_or_404(Client, id=client_id)
+        client_metadata = {
+            "current_balance": client.current_balance,
+            "limit": client.limit,
+            "balance_date": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+        }
+        data_to_return = {
+            "saldo": {
+                "total": client_metadata["current_balance"],
+                "data_extrato": client_metadata["balance_date"],
+                "limite": client_metadata["limit"],
+            },
+            "ultimas_transacoes": [t.to_summarized_json() for t in last_transactions],
+        }
+        # client_metadata = get_client_balance_and_metadata(client_id)
+        # data_to_return = {
+        #     "saldo": {
+        #         "total": client_metadata["current_balance"],
+        #         "data_extrato": client_metadata["balance_date"],
+        #         "limite": client_metadata["limit"],
+        #     },
+        #     "ultimas_transacoes": [t.to_summarized_json() for t in last_transactions],
+        # }
+        return JsonResponse(
+            data=data_to_return,
+        )
+        pass

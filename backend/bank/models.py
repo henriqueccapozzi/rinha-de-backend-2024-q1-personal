@@ -35,7 +35,7 @@ class Transaction(models.Model):
 class Client(models.Model):
     limit = models.IntegerField()
     initial_balance = models.IntegerField()
-    # current_balance = models.IntegerField() #TODO
+    current_balance = models.IntegerField(default=0)
 
     def to_json(self):
         return {
