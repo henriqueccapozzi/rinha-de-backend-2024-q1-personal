@@ -1,0 +1,42 @@
+[
+    {
+        "model": "bank.client",
+        "pk": 1,
+        "fields": {
+            "limit": 100000,
+            "initial_balance": 0
+        }
+    },
+    {
+        "model": "bank.client",
+        "pk": 2,
+        "fields": {
+            "limit": 80000,
+            "initial_balance": 0
+        }
+    },
+    {
+        "model": "bank.client",
+        "pk": 3,
+        "fields": {
+            "limit": 1000000,
+            "initial_balance": 0
+        }
+    },
+    {
+        "model": "bank.client",
+        "pk": 4,
+        "fields": {
+            "limit": 10000000,
+            "initial_balance": 0
+        }
+    },
+    {
+        "model": "bank.client",
+        "pk": 5,
+        "fields": {
+            "limit": 500000,
+            "initial_balance": 0
+        }
+    }
+]
