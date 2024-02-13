@@ -118,7 +118,7 @@ STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-CONN_MAX_AGE = 60
+CONN_MAX_AGE = 0
 
 # LOGGING = {
 #     "version": 1,

@@ -4,7 +4,8 @@ RUN pip3 install --no-cache-dir \
     Django==4.2.9 \
     psycopg2-binary==2.9.9 \
     gunicorn==21.2.0 \
-    uvicorn==0.27.1 && \
+    uvicorn==0.27.1 \
+    pgbouncer && \
     useradd -m -d /app -s /bin/bash app
 
 
