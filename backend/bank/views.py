@@ -1,6 +1,7 @@
 from datetime import datetime
 import json
 
+from django.db.models import Sum, Case, When, F
 from django.db import transaction
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
@@ -57,8 +58,20 @@ def create_transaction(request, client_id):
 def get_bank_statement(request, client_id, limit_transactions=10):
     with transaction.atomic():
         client = get_object_or_404(Client, id=client_id)
+        result = (
+            Transaction.objects.filter(client_id=client_id)
+            .only("amount", "type")
+            .aggregate(
+                total_deposit=Sum(Case(When(type="c", then=F("amount")), default=0)),
+                total_withdrawal=Sum(Case(When(type="d", then=F("amount")), default=0)),
+            )
+        )
+        total_deposit_amount = result["total_deposit"] or 0
+        total_withdrawal_amount = result["total_withdrawal"] or 0
+        current_balance = total_deposit_amount - total_withdrawal_amount + client.initial_balance
+
         client_metadata = {
-            "current_balance": client.current_balance,
+            "current_balance": current_balance,
             "limit": client.limit,
             "balance_date": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
         }
