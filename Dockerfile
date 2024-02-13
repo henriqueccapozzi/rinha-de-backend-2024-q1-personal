@@ -1,11 +1,12 @@
 FROM python:3.9.18-slim-bullseye
 
-RUN pip3 install --no-cache-dir \
+RUN apt-get update && \
+    apt-get install -y gcc python3-dev libev-dev && \
+    pip3 install --no-cache-dir \
     Django==4.2.9 \
     psycopg2-binary==2.9.9 \
     gunicorn==21.2.0 \
-    uvicorn==0.27.1 \
-    pgbouncer && \
+    bjoern==3.2.2 && \
     useradd -m -d /app -s /bin/bash app
 
 

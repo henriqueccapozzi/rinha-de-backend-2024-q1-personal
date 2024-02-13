@@ -5,13 +5,17 @@ services:
     image: henriqueccapozzi/rinha-2024q1-crebito
     hostname: api01
     # command: gunicorn --access-logfile - --error-logfile - -w 1 backend.wsgi -b 0.0.0.0:8000 --worker-connections 60
-    command: gunicorn -w 4 -t 1 backend.wsgi -b 0.0.0.0:8000 --worker-connections 100
+    # command: gunicorn -w 2 backend.wsgi -b 0.0.0.0:8000 --worker-connections 1000 -t4
+    # command: gunicorn -w 2 backend.wsgi -b 0.0.0.0:8000 --worker-connections 30
+    command: python3 wsgi_bjoern.py
     # command: gunicorn -w 2 -t 1 backend.wsgi -b 0.0.0.0:8000 --worker-connections 100 --access-logfile - --error-logfile -
     # command: python3 -m uvicorn backend.asgi:application --host 0.0.0.0 --port 8000
     # command: python3 -m gunicorn backend.asgi:application -k uvicorn.workers.UvicornWorker -b 0.0.0.0:8000 -w 2 --worker-connections 45
     environment:
       # - DB_HOSTNAME=db
       - DB_HOSTNAME=pgbouncer
+      - PORT=8000
+      - NUM_WORKERS=2
     ports:
       # - "9999:8000"
       - "8001:8000"
@@ -25,8 +29,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.30"
-          memory: "100MB"
+          cpus: "0.20"
+          memory: "70MB"
 
   api02:
     <<: *api
@@ -57,7 +61,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.14"
+          cpus: "0.10"
           memory: "20MB"
 
   pgbouncer:
@@ -71,23 +75,30 @@ services:
       DATABASE_URL: "postgres://myuser:supersecret@db:5432/crebito"
       AUTH_TYPE: plain
       ADMIN_USERS: postgres,dbuser
-      POOL_MODE: transaction
-      MAX_DB_CONNECTIONS: "200"
-      DEFAULT_POOL_SIZE: "100"
-      LOG_CONNECTIONS: "0"
+      POOL_MODE: session
+      # POOL_MODE: transaction
+      MAX_DB_CONNECTIONS: "40"
+      MAX_USER_CONNECTIONS: "40"
+      DEFAULT_POOL_SIZE: "40"
+      MIN_POOL_SIZE: "40"
+      LOG_FILE: /dev/null
+      LOG_CONNECTIONS: 0
+      LOG_DISCONNECTIONS: 0
+      LOG_POOLER_ERRORS: 0
+      LOG_STATS: 0
     depends_on:
       - db
     deploy:
       resources:
         limits:
-          cpus: "0.20"
-          memory: "70MB"
+          cpus: "0.10"
+          memory: "50MB"
 
 
   db:
     image: postgres:latest
     hostname: db
-    command: postgres -c 'max_connections=220' -c checkpoint_timeout=600 -c max_wal_size=4096
+    command: postgres -c 'shared_buffers=160MB' -c 'max_connections=50' -c checkpoint_timeout=600 -c max_wal_size=4096
     environment:
       - POSTGRES_PASSWORD=supersecret
       - POSTGRES_USER=myuser
@@ -99,8 +110,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.56"
-          memory: "260MB"
+          cpus: "0.90"
+          memory: "200MB"
 
 networks:
   default:

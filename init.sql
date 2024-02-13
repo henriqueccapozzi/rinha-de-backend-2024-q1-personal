@@ -686,6 +686,7 @@ CREATE INDEX auth_user_username_6821ab7c_like ON public.auth_user USING btree (u
 --
 
 CREATE INDEX bank_transaction_client_id_6936247e ON public.bank_transaction USING btree (client_id);
+CREATE INDEX bank_transaction_created_at_6936247e ON public.bank_transaction USING btree (created_at);
 
 
 --

@@ -58,8 +58,9 @@ def create_transaction(request, client_id):
 def get_bank_statement(request, client_id, limit_transactions=10):
     with transaction.atomic():
         client = get_object_or_404(Client, id=client_id)
+        balance_date = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
         result = (
-            Transaction.objects.filter(client_id=client_id)
+            Transaction.objects.filter(client_id=client_id, created_at__lte=balance_date)
             .only("amount", "type")
             .aggregate(
                 total_deposit=Sum(Case(When(type="c", then=F("amount")), default=0)),
@@ -73,7 +74,7 @@ def get_bank_statement(request, client_id, limit_transactions=10):
         client_metadata = {
             "current_balance": current_balance,
             "limit": client.limit,
-            "balance_date": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            "balance_date": balance_date,
         }
         last_transactions = (
             Transaction.objects.filter(client=client_id)

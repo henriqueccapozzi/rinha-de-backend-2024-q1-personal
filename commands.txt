@@ -8,3 +8,43 @@ DB_HOSTNAME=localhost python3 -m uvicorn backend.asgi:application --host 0.0.0.0
 
 python3 -m uvicorn backend.wsgi:applicatio
 DOCKER_BUILDKIT=1 docker build -t henriqueccapozzi/rinha-2024q1-crebito .
+
+https://saadmk11.github.io/blog/posts/django-postgresql-database-connection-pooling-with-pgbouncer/#add-and-configure-pgbouncer
+
+
+SQLs
+api01_1  | (0.000) BEGIN; args=None; alias=default
+api01_1  | (0.002) SELECT "bank_client"."id", "bank_client"."limit", "bank_client"."initial_balance", "bank_client"."current_balance" FROM "bank_client" WHERE "bank_client"."id" = 1 LIMIT 21; args=(1,); alias=default
+api01_1  | (0.001) UPDATE "bank_client" SET "limit" = 100000, "initial_balance" = 0, "current_balance" =  -24510 WHERE "bank_client"."id" = 1; args=(100000, 0, -24510, 1); alias=default
+api01_1  | (0.001) INSERT INTO "bank_transaction" ("amount", "type", "description", "created_at", "client_id") VALUES (2828, 'd', 'AGdgziNeHL', '2024-02-13T11:49:49.691288+00:00'::timestamptz, 1) RETURNING "bank_transaction"."id"; args=(2828, 'd', 'AGdgziNeHL', datetime.datetime(2024, 2, 13, 11, 49, 49, 691288, tzinfo=datetime.timezone.utc), 1); alias=default
+api01_1  | (0.003) COMMIT; args=None; alias=default
+api01_1  | (0.000) BEGIN; args=None; alias=default
+api01_1  | (0.002) SELECT "bank_client"."id", "bank_client"."limit", "bank_client"."initial_balance", "bank_client"."current_balance" FROM "bank_client" WHERE "bank_client"."id" = 5 LIMIT 21; args=(5,); alias=default
+api01_1  | (0.002) SELECT SUM(CASE WHEN "bank_transaction"."type" = 'c' THEN "bank_transaction"."amount" ELSE 0 END) AS "total_deposit", SUM(CASE WHEN "bank_transaction"."type" = 'd' THEN "bank_transaction"."amount" ELSE 0 END) AS "total_withdrawal" FROM "bank_transaction" WHERE "bank_transaction"."client_id" = 5; args=('c', 0, 'd', 0, 5); alias=default
+api01_1  | (0.002) SELECT "bank_transaction"."id", "bank_transaction"."amount", "bank_transaction"."type", "bank_transaction"."description", "bank_transaction"."created_at" FROM "bank_transaction" WHERE "bank_transaction"."client_id" = 5 ORDER BY "bank_transaction"."created_at" DESC LIMIT 10; args=(5,); alias=default
+api01_1  | (0.000) COMMIT; args=None; alias=default
+api01_1  | (0.000) BEGIN; args=None; alias=default
+api01_1  | (0.001) SELECT "bank_client"."id", "bank_client"."limit", "bank_client"."initial_balance", "bank_client"."current_balance" FROM "bank_client" WHERE "bank_client"."id" = 3 LIMIT 21; args=(3,); alias=default
+api01_1  | (0.001) UPDATE "bank_client" SET "limit" = 1000000, "initial_balance" = 0, "current_balance" =  -713670 WHERE "bank_client"."id" = 3; args=(1000000, 0, -713670, 3); alias=default
+api01_1  | (0.001) INSERT INTO "bank_transaction" ("amount", "type", "description", "created_at", "client_id") VALUES (1919, 'c', 'SSI91zWZe2', '2024-02-13T11:50:46.946416+00:00'::timestamptz, 3) RETURNING "bank_transaction"."id"; args=(1919, 'c', 'SSI91zWZe2', datetime.datetime(2024, 2, 13, 11, 50, 46, 946416, tzinfo=datetime.timezone.utc), 3); alias=default
+api01_1  | (0.004) COMMIT; args=None; alias=default
+api01_1  | (0.000) BEGIN; args=None; alias=default
+api01_1  | (0.001) SELECT "bank_client"."id", "bank_client"."limit", "bank_client"."initial_balance", "bank_client"."current_balance" FROM "bank_client" WHERE "bank_client"."id" = 1 LIMIT 21; args=(1,); alias=default
+api01_1  | (0.000) COMMIT; args=None; alias=default
+
+api02_1  | (0.000) BEGIN; args=None; alias=default
+api02_1  | (0.001) SELECT "bank_client"."id", "bank_client"."limit", "bank_client"."initial_balance", "bank_client"."current_balance" FROM "bank_client" WHERE "bank_client"."id" = 1 LIMIT 21; args=(1,); alias=default
+api02_1  | (0.001) UPDATE "bank_client" SET "limit" = 100000, "initial_balance" = 0, "current_balance" =  -99514 WHERE "bank_client"."id" = 1; args=(100000, 0, -99514, 1); alias=default
+api02_1  | (0.001) INSERT INTO "bank_transaction" ("amount", "type", "description", "created_at", "client_id") VALUES (9055, 'd', 'l2SFMK0T2q', '2024-02-13T11:50:46.911469+00:00'::timestamptz, 1) RETURNING "bank_transaction"."id"; args=(9055, 'd', 'l2SFMK0T2q', datetime.datetime(2024, 2, 13, 11, 50, 46, 911469, tzinfo=datetime.timezone.utc), 1); alias=default
+api02_1  | (0.006) COMMIT; args=None; alias=default
+api02_1  | (0.000) BEGIN; args=None; alias=default
+api02_1  | (0.002) SELECT "bank_client"."id", "bank_client"."limit", "bank_client"."initial_balance", "bank_client"."current_balance" FROM "bank_client" WHERE "bank_client"."id" = 5 LIMIT 21; args=(5,); alias=default
+api02_1  | (0.006) UPDATE "bank_client" SET "limit" = 500000, "initial_balance" = 0, "current_balance" =  -487439 WHERE "bank_client"."id" = 5; args=(500000, 0, -487439, 5); alias=default
+api02_1  | (0.003) INSERT INTO "bank_transaction" ("amount", "type", "description", "created_at", "client_id") VALUES (3010, 'c', 'R6m2LqMLKx', '2024-02-13T11:50:46.961362+00:00'::timestamptz, 5) RETURNING "bank_transaction"."id"; args=(3010, 'c', 'R6m2LqMLKx', datetime.datetime(2024, 2, 13, 11, 50, 46, 961362, tzinfo=datetime.timezone.utc), 5); alias=default
+api02_1  | (0.002) COMMIT; args=None; alias=default
+api02_1  | (0.000) BEGIN; args=None; alias=default
+
+
+
+LINKS:
+https://saadmk11.github.io/blog/posts/django-postgresql-database-connection-pooling-with-pgbouncer/#add-and-configure-pgbouncer
