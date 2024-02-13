@@ -41,11 +41,11 @@ def create_transaction(request, client_id):
             elif type == "c":
                 new_balance = current_balance + amount
 
+            client.current_balance = new_balance
+            client.save()
             bank_transaction = Transaction.objects.create(
                 amount=amount, type=type, description=description, client=client
             )
-            client.current_balance = new_balance
-            client.save()
             # bank_transaction.save()
             result_obj = {
                 "limite": client.limit,
@@ -56,18 +56,17 @@ def create_transaction(request, client_id):
 
 def get_bank_statement(request, client_id, limit_transactions=10):
     with transaction.atomic():
-        last_transactions = (
-            Transaction.objects.filter(client=client_id)
-            .order_by("-created_at")
-            .only("amount", "type", "description", "created_at")[:limit_transactions]
-        )
-
         client = get_object_or_404(Client, id=client_id)
         client_metadata = {
             "current_balance": client.current_balance,
             "limit": client.limit,
             "balance_date": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
         }
+        last_transactions = (
+            Transaction.objects.filter(client=client_id)
+            .order_by("-created_at")
+            .only("amount", "type", "description", "created_at")[:limit_transactions]
+        )
         data_to_return = {
             "saldo": {
                 "total": client_metadata["current_balance"],

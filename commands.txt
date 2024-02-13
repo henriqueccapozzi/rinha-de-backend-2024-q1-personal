@@ -2,7 +2,9 @@ python3 manage.py dumpdata bank.Client --indent 2 > initial_data.json
 python3 manage.py migrate
 python3 manage.py loaddata initial_data.json
 
-DB_HOSTNAME=localhost python3 -m gunicorn backend.asgi:application -k uvicorn.workers.Uvic
-ornWorker
+DB_HOSTNAME=localhost python3 -m gunicorn backend.asgi:application -k uvicorn.workers.UvicornWorker
+DB_HOSTNAME=localhost python3 -m uvicorn backend.asgi:application --host 0.0.0.0 --port 8000 --limit-concurrency 50
 
+
+python3 -m uvicorn backend.wsgi:applicatio
 DOCKER_BUILDKIT=1 docker build -t henriqueccapozzi/rinha-2024q1-crebito .
