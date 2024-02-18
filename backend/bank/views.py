@@ -30,7 +30,10 @@ def create_transaction(request, client_id):
 
         # Only go to the DB if the received data passes basic validation
         with transaction.atomic():
-            client = get_object_or_404(Client, id=client_id)
+            try:
+                client = Client.objects.select_for_update().get(id=client_id)
+            except Client.DoesNotExist:
+                return JsonResponse(data={}, status=404)
             current_balance = client.current_balance
             if type == "d":
                 if amount > current_balance + client.limit:
@@ -89,15 +92,7 @@ def get_bank_statement(request, client_id, limit_transactions=10):
             },
             "ultimas_transacoes": [t.to_summarized_json() for t in last_transactions],
         }
-        # client_metadata = get_client_balance_and_metadata(client_id)
-        # data_to_return = {
-        #     "saldo": {
-        #         "total": client_metadata["current_balance"],
-        #         "data_extrato": client_metadata["balance_date"],
-        #         "limite": client_metadata["limit"],
-        #     },
-        #     "ultimas_transacoes": [t.to_summarized_json() for t in last_transactions],
-        # }
+
         return JsonResponse(
             data=data_to_return,
         )
