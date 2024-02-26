@@ -62,17 +62,7 @@ def get_bank_statement(request, client_id, limit_transactions=10):
     with transaction.atomic():
         client = get_object_or_404(Client, id=client_id)
         balance_date = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-        result = (
-            Transaction.objects.filter(client_id=client_id, created_at__lte=balance_date)
-            .only("amount", "type")
-            .aggregate(
-                total_deposit=Sum(Case(When(type="c", then=F("amount")), default=0)),
-                total_withdrawal=Sum(Case(When(type="d", then=F("amount")), default=0)),
-            )
-        )
-        total_deposit_amount = result["total_deposit"] or 0
-        total_withdrawal_amount = result["total_withdrawal"] or 0
-        current_balance = total_deposit_amount - total_withdrawal_amount + client.initial_balance
+        current_balance = client.current_balance
 
         client_metadata = {
             "current_balance": current_balance,
