@@ -4,32 +4,20 @@ services:
   api01: &api
     image: henriqueccapozzi/rinha-2024q1-crebito
     hostname: api01
-    # command: gunicorn --access-logfile - --error-logfile - -w 1 backend.wsgi -b 0.0.0.0:8000 --worker-connections 60
-    # command: gunicorn -w 2 backend.wsgi -b 0.0.0.0:8000 --worker-connections 1000 -t4
-    # command: gunicorn -w 2 backend.wsgi -b 0.0.0.0:8000 --worker-connections 30
     command: python3 wsgi_bjoern.py
-    # command: gunicorn -w 2 -t 1 backend.wsgi -b 0.0.0.0:8000 --worker-connections 100 --access-logfile - --error-logfile -
-    # command: python3 -m uvicorn backend.asgi:application --host 0.0.0.0 --port 8000
-    # command: python3 -m gunicorn backend.asgi:application -k uvicorn.workers.UvicornWorker -b 0.0.0.0:8000 -w 2 --worker-connections 45
     environment:
-      # - DB_HOSTNAME=db
       - DB_HOSTNAME=pgbouncer
       - PORT=8000
-      - NUM_WORKERS=2
+      - NUM_WORKERS=4
     ports:
-      # - "9999:8000"
       - "8001:8000"
-    volumes:
-      - ./backend:/app
-      # - ./secrets/.pg_pass:/app/.pg_pass
-      # - ./secrets/.pg_service.conf:/app/.pg_service.conf
     depends_on:
       - db
       - pgbouncer
     deploy:
       resources:
         limits:
-          cpus: "0.20"
+          cpus: "0.40"
           memory: "70MB"
 
   api02:
@@ -37,16 +25,6 @@ services:
     hostname: api02
     ports:
       - "8002:8000"
-  # api03:
-  #   <<: *api
-  #   hostname: api03
-  #   ports:
-  #     - "8003:8000"
-  # api04:
-  #   <<: *api
-  #   hostname: api04
-  #   ports:
-  #     - "8004:8000"
 
 
   nginx:
@@ -67,16 +45,13 @@ services:
   pgbouncer:
     image: edoburu/pgbouncer:1.18.0
     hostname: pgbouncer
-    # env_file:
-    #   - ./.env
     volumes:
       - ./pgbouncer.ini:/etc/pgbouncer/pgbouncer.ini:ro
     environment:
       DATABASE_URL: "postgres://myuser:supersecret@db:5432/crebito"
       AUTH_TYPE: plain
       ADMIN_USERS: postgres,dbuser
-      POOL_MODE: session
-      # POOL_MODE: transaction
+      POOL_MODE: transaction
       MAX_DB_CONNECTIONS: "40"
       MAX_USER_CONNECTIONS: "40"
       DEFAULT_POOL_SIZE: "40"
@@ -110,7 +85,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.90"
+          cpus: "0.50"
           memory: "200MB"
 
 networks:
